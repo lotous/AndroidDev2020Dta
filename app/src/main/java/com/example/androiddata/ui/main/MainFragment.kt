@@ -5,16 +5,15 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import com.example.androiddata.R
+import kotlinx.android.synthetic.main.main_fragment.*
 
 class MainFragment : Fragment() {
 
-    companion object {
-        fun newInstance() = MainFragment()
-    }
-
     private lateinit var viewModel: MainViewModel
+    private lateinit var viewModelFactory: MainViewModelFactory
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -25,8 +24,17 @@ class MainFragment : Fragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        viewModel = ViewModelProviders.of(this).get(MainViewModel::class.java)
-        // TODO: Use the ViewModel
+        viewModelFactory = MainViewModelFactory(requireContext())
+        viewModel = ViewModelProvider(this, viewModelFactory).get(MainViewModel::class.java)
+        viewModel.monsterData.observe(
+            viewLifecycleOwner,
+            Observer
+            {
+                val adapter = MainRecyclerAdapter(it)
+                recyclerView.adapter = adapter
+            }
+        )
+
     }
 
 }
