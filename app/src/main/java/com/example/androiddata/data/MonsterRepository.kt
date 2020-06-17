@@ -21,9 +21,14 @@ import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import com.example.androiddata.LOG_TAG
 import com.example.androiddata.utilities.FileHelper
+import com.squareup.moshi.JsonAdapter
+import com.squareup.moshi.Moshi
+import com.squareup.moshi.Types
+import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONTokener
+
 
 /**
  * Class MonsterRepository
@@ -37,38 +42,16 @@ class MonsterRepository(private val context: Context) {
     val monsterData = MutableLiveData<List<Monster>>()
 
     init {
-       getMonsterData()
+       monsterData.value = getMonsterData()
        Log.i(LOG_TAG, "Monster Data Is Available:")
     }
 
-    private fun getMonsterData(){
-        val text: String? = FileHelper.getTextFromAssets(context, "monster_data.json")
-        monsterData.value = parseToMonsterList(text)
-    }
-
-    private fun parseToMonsterList(jsonString: String?): List<Monster> {
-        val listJson: JSONArray = JSONTokener(jsonString).nextValue() as JSONArray
-        val monsterList: MutableList<Monster> = mutableListOf()
-        for (i in 0 until listJson.length()) {
-            try {
-                val jsonObject = listJson.getJSONObject(i)
-                if (jsonObject.has("monsterName")){
-                    monsterList.add(
-                        Monster(
-                            jsonObject.optString("monsterName"),
-                            jsonObject.optString("imageFile"),
-                            jsonObject.optString("caption"),
-                            jsonObject.optString("description"),
-                            jsonObject.optDouble("price"),
-                            jsonObject.optInt("scariness")
-                        )
-                    )
-                }
-            } catch (e: JSONException) {
-                e.printStackTrace()
-            }
-        }
-        return monsterList.toList()
+    private fun getMonsterData() : List<Monster> {
+        val json = FileHelper.getTextFromAssets(context, "monster_data.json")
+        val jsonObject = Moshi.Builder().add(KotlinJsonAdapterFactory()).build()
+        val listType = Types.newParameterizedType(List::class.java, Monster::class.java)
+        val adapter: JsonAdapter<List<Monster>> = jsonObject.adapter(listType)
+        return adapter.fromJson(json)?:emptyList()
     }
 
 

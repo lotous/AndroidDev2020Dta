@@ -43,13 +43,13 @@ class FileHelper {
             return dataString
         }
 
-        fun getTextFromAssets(context: Context?, fileName: String):String? {
+        fun getTextFromAssets(context: Context?, fileName: String):String {
             val dataString: String
             try {
                 dataString = context!!.assets.open(fileName).bufferedReader().use { it.readText() }
             } catch (ioException: IOException) {
                 ioException.printStackTrace()
-                return null
+                return "[]"
             }
             return dataString
         }
